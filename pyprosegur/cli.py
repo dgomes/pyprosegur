@@ -71,10 +71,28 @@ async def disarm(ctx):
 
         print(r)
 
+@click.command()
+@click.pass_context
+async def activity(ctx):
+    """Get Alarm Panel Activity."""
+    username = ctx.obj["username"]
+    password = ctx.obj["password"]
+
+    async with aiohttp.ClientSession() as session:
+        auth = Auth(session, username, password)
+
+        installation = await Installation.retrieve(auth)
+
+        r = await installation.activity(auth)
+
+        pprint.pprint(r)
+
+
 
 prosegur.add_command(installation)
 prosegur.add_command(arm)
 prosegur.add_command(disarm)
+prosegur.add_command(activity)
 
 if __name__ == "__main__":
     prosegur(obj={})
