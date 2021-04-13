@@ -5,7 +5,7 @@ from aiohttp import ClientSession, ClientResponse
 
 LOGGER = logging.getLogger(__name__)
 
-SMART_SERVER_WS = "https://alarmas.movistarproseguralarmas.es/smart-mv/ws"
+SMART_SERVER_WS = "https://smart.prosegur.com/smart-server/ws"
 
 
 class Auth:
@@ -32,7 +32,7 @@ class Auth:
             "user": self.user,
             "password": self.password,
             "language": "en_GB",
-            "origin": "Web",
+            "origin": "WebM",
             "platform": "smart2",
             "provider": None,
         }
