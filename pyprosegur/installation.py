@@ -82,7 +82,7 @@ class Installation():
         if self.status == Status.PARTIALLY:
             return True
 
-        data = {"statusCode": Status.PARTIALLY}
+        data = {"statusCode": Status.PARTIALLY.value}
 
         resp = await auth.request(
             "PUT", f"/installation/{self.installationId}/status", json=data

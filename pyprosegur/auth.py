@@ -5,7 +5,7 @@ from aiohttp import ClientSession, ClientResponse
 
 LOGGER = logging.getLogger(__name__)
 
-SMART_SERVER_WS = "https://smart.prosegur.com/smart-server/ws"
+SMART_SERVER_WS = "https://alarmas.movistarproseguralarmas.es/smart-mv/ws"
 
 
 class Auth:
@@ -22,8 +22,8 @@ class Auth:
         self.headers = {
             "Accept": "application/json, text/plain, */*",
             "Content-Type": "application/json;charset=UTF-8",
-            "Origin": "https://smart.prosegur.com",
-            "Referer": "https://smart.prosegur.com/smart-individuo/login.html",
+            "Origin": "https://alarmas.movistarproseguralarmas.es",
+            "Referer": "https://alarmas.movistarproseguralarmas.es/smart-mv/login.html",
         }
 
     async def login(self):
