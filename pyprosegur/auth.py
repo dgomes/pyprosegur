@@ -74,6 +74,7 @@ class Auth:
 
         if resp.status != 200:
             del self.headers["X-Smart-Token"]
+            LOGGER.error(resp.text)
             raise ConnectionError(
                 f"{resp.status} couldn't {method} {path}: {resp.text}"
             )

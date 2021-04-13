@@ -1,3 +1,4 @@
+asyncclick
 click==7.1.2
 aiohttp==3.7.3
 
