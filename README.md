@@ -10,6 +10,7 @@ Python library to retrieve information from [Prosegur Residential Alarms](http:/
 ## Changelog
 
 * 0.0.1 - Initial Release
+* 0.0.4 - Support for MovistarProsegurAlarms
 
 ## NOTES:
 
