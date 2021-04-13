@@ -7,23 +7,41 @@ LOGGER = logging.getLogger(__name__)
 
 SMART_SERVER_WS = "https://smart.prosegur.com/smart-server/ws"
 
+COUNTRY = {
+    "PT": {
+        "Origin": "https://smart.prosegur.com/smart-individuo",
+        "Referer": "https://smart.prosegur.com/smart-individuo/login.html",
+        "origin": "Web",
+    },
+    "ES": {
+        "Origin": "https://alarmas.movistarproseguralarmas.es",
+        "Referer": "https://alarmas.movistarproseguralarmas.es/smart-mv/login.html",
+        "origin": "WebM",
+    },
+}
+
 
 class Auth:
     """Class to make authenticated requests."""
 
-    def __init__(self, websession: ClientSession, user: str, password: str):
+    def __init__(
+        self, websession: ClientSession, user: str, password: str, country: str
+    ):
         """Initialize the auth."""
         self.websession = websession
         self.user = user
         self.password = password
+        self.country = country
+        if country not in COUNTRY:
+            raise ValueError(f"{country} not in {COUNTRY.keys()}")
 
         self.smart_token = None
 
         self.headers = {
             "Accept": "application/json, text/plain, */*",
             "Content-Type": "application/json;charset=UTF-8",
-            "Origin": "https://smart.prosegur.com",
-            "Referer": "https://smart.prosegur.com/smart-individuo/login.html",
+            "Origin": COUNTRY[self.country]["Origin"],
+            "Referer": COUNTRY[self.country]["Referer"],
         }
 
     async def login(self):
@@ -32,7 +50,7 @@ class Auth:
             "user": self.user,
             "password": self.password,
             "language": "en_GB",
-            "origin": "Web",
+            "origin": COUNTRY[self.country]["origin"],
             "platform": "smart2",
             "provider": None,
         }
@@ -74,6 +92,7 @@ class Auth:
 
         if resp.status != 200:
             del self.headers["X-Smart-Token"]
+            LOGGER.error(resp.text)
             raise ConnectionError(
                 f"{resp.status} couldn't {method} {path}: {resp.text}"
             )

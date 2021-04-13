@@ -27,12 +27,17 @@ class Status(enum.Enum):
             return Status.PARTIALLY
         if code == "EAP":
             return Status.ERROR_PARTIALLY
-        
+
         raise NotImplementedError(f"'{code}' not an implemented Installation.Status")
 
 
-class Installation():
+class Installation:
     """Alarm Panel Installation."""
+
+    def __init__(self):
+        self.number = None
+        self.data = None
+        self.installationId = None
 
     @classmethod
     async def retrieve(cls, auth: Auth, number: int = 0):
@@ -82,7 +87,7 @@ class Installation():
         if self.status == Status.PARTIALLY:
             return True
 
-        data = {"statusCode": Status.PARTIALLY}
+        data = {"statusCode": Status.PARTIALLY.value}
 
         resp = await auth.request(
             "PUT", f"/installation/{self.installationId}/status", json=data
@@ -90,7 +95,6 @@ class Installation():
 
         LOGGER.debug("ARM HTTP status: %s\t%s", resp.status, await resp.text())
         return resp.status == 200
-
 
     async def disarm(self, auth: Auth):
         """Order Alarm Panel to Disarm itself."""
@@ -108,13 +112,14 @@ class Installation():
 
     async def activity(self, auth: Auth):
         """Retrieve activity events."""
-       
+
         date = datetime.datetime.now() - datetime.timedelta(hours=24)
-        ts = int(date.timestamp())*1000
+        ts = int(date.timestamp()) * 1000
         resp = await auth.request(
-            "GET", f"/event/installation/{self.installationId}/less?limitDate?{ts}")
+            "GET", f"/event/installation/{self.installationId}/less?limitDate?{ts}"
+        )
 
         json = await resp.json()
         LOGGER.debug("Activity: %s", json)
 
-        return json 
+        return json
