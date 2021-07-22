@@ -4,6 +4,7 @@
 Python library to retrieve information from [Prosegur Residential Alarms](http://www.prosegur.pt)
 
 ## Requirements
+- backoff
 - aiohttp
 - Click 
 
@@ -11,6 +12,7 @@ Python library to retrieve information from [Prosegur Residential Alarms](http:/
 
 * 0.0.1 - Initial Release
 * 0.0.4 - Support for MovistarProsegurAlarms
+* 0.0.5 - Add exponential backoff retries
 
 ## NOTES:
 

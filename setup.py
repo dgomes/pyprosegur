@@ -18,6 +18,7 @@ setup(
     zip_safe=True,
     platforms='any',
     install_requires=[
+        'backoff',
         'aiohttp',
         'click',
       ],

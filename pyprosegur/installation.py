@@ -15,6 +15,8 @@ class Status(enum.Enum):
     DISARMED = "DA"
     PARTIALLY = "AP"
     ERROR_PARTIALLY = "EAP"
+    ALARM = "LE"
+    ERROR_COMMUNICATIONS = "EDA-COM"
 
     @staticmethod
     def from_str(code):
@@ -27,6 +29,10 @@ class Status(enum.Enum):
             return Status.PARTIALLY
         if code == "EAP":
             return Status.ERROR_PARTIALLY
+        if code == "EDA-COM":
+            return Status.ERROR_COMMUNICATIONS
+        if code == "LE":
+            return Status.ALARM
 
         raise NotImplementedError(f"'{code}' not an implemented Installation.Status")
 
