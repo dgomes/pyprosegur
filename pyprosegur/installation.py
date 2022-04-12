@@ -11,31 +11,28 @@ LOGGER = logging.getLogger(__name__)
 class Status(enum.Enum):
     """Alarm Panel Status."""
 
+    ALARM = "LE"
     ARMED = "AT"
     DISARMED = "DA"
     PARTIALLY = "AP"
+    ERROR_DISARMED = "EDA"
+    ERROR_ARMED_TOTAL = "EAT"
     ERROR_PARTIALLY = "EAP"
-    ALARM = "LE"
-    ERROR_COMMUNICATIONS = "EDA-COM"
+    ERROR_ARMED_TOTAL_COMMUNICATIONS = "EAT-COM"
+    ERROR_DISARMED_COMMUNICATIONS = "EDA-COM"
+    ERROR_PARTIALLY_COMMUNICATIONS = "EAP-COM"
 
     @staticmethod
     def from_str(code):
         """Convert Status Code to Enum."""
-        if code == "AT":
-            return Status.ARMED
-        if code == "DA":
-            return Status.DISARMED
-        if code == "AP":
-            return Status.PARTIALLY
-        if code == "EAP":
-            return Status.ERROR_PARTIALLY
-        if code == "EDA-COM":
-            return Status.ERROR_COMMUNICATIONS
-        if code == "LE":
-            return Status.ALARM
+        for status in Status:
+            if code == str(status.value):
+                return status 
 
         raise NotImplementedError(f"'{code}' not an implemented Installation.Status")
 
+class BackendError(Exception):
+    """Error to indicate backend did not return something usefull."""
 
 class Installation:
     """Alarm Panel Installation."""
@@ -56,7 +53,7 @@ class Installation:
         resp_json = await resp.json()
         if resp_json["result"]["code"] != 200:
             LOGGER.error(resp_json["result"])
-            return None
+            raise BackendError(resp_json["result"])
 
         self.data = resp_json["data"][self.number]
 
