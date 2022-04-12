@@ -68,8 +68,12 @@ class Auth:
         login = await response.json()
         self.headers["X-Smart-Token"] = login["data"]["token"]
 
-    @backoff.on_exception(backoff.expo, ConnectionRefusedError, max_tries=1, logger=LOGGER)
-    @backoff.on_exception(backoff.expo, ConnectionError, base=5, max_tries=3, logger=LOGGER)
+    @backoff.on_exception(
+        backoff.expo, ConnectionRefusedError, max_tries=1, logger=LOGGER
+    )
+    @backoff.on_exception(
+        backoff.expo, ConnectionError, base=5, max_tries=3, logger=LOGGER
+    )
     async def request(self, method: str, path: str, **kwargs) -> ClientResponse:
         """Make a request."""
         if self.websession.closed:
@@ -95,13 +99,11 @@ class Auth:
 
         if 500 <= resp.status <= 600:
             LOGGER.warning(resp.text)
-            raise ConnectionError(
-                f"Prosegur backend is unresponsive"
-            )
+            raise ConnectionError(f"Prosegur backend is unresponsive")
 
         if 400 <= resp.status < 500:
             del self.headers["X-Smart-Token"]
-            raise ConnectionRefusedError()            
+            raise ConnectionRefusedError()
 
         if resp.status != 200:
             LOGGER.error(resp.text)

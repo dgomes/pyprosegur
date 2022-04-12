@@ -27,12 +27,14 @@ class Status(enum.Enum):
         """Convert Status Code to Enum."""
         for status in Status:
             if code == str(status.value):
-                return status 
+                return status
 
         raise NotImplementedError(f"'{code}' not an implemented Installation.Status")
 
+
 class BackendError(Exception):
     """Error to indicate backend did not return something usefull."""
+
 
 class Installation:
     """Alarm Panel Installation."""
