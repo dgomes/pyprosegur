@@ -1,7 +1,8 @@
 """Installation Representation."""
 import enum
 import logging
-import datetime
+from dataclasses import dataclass
+from datetime import datetime, timedelta
 
 from pyprosegur.auth import Auth
 
@@ -36,10 +37,21 @@ class BackendError(Exception):
     """Error to indicate backend did not return something usefull."""
 
 
+@dataclass
+class Event:
+    """Event in a Prosegur Alarm."""
+
+    ts: datetime
+    id: str
+    operation: Status
+    by: str
+
+
 class Installation:
     """Alarm Panel Installation."""
 
     def __init__(self):
+        """Installation properties."""
         self.number = None
         self.data = None
         self.installationId = None
@@ -115,10 +127,10 @@ class Installation:
         LOGGER.debug("DISARM HTTP status: %s\t%s", resp.status, await resp.text())
         return resp.status == 200
 
-    async def activity(self, auth: Auth):
+    async def activity(self, auth: Auth, delta=timedelta(hours=24)):
         """Retrieve activity events."""
 
-        date = datetime.datetime.now() - datetime.timedelta(hours=24)
+        date = datetime.now() - delta
         ts = int(date.timestamp()) * 1000
         resp = await auth.request(
             "GET", f"/event/installation/{self.installationId}/less?limitDate?{ts}"
@@ -128,3 +140,24 @@ class Installation:
         LOGGER.debug("Activity: %s", json)
 
         return json
+
+    async def last_event(self, auth: Auth):
+        """Return Last Event."""
+        _all = await self.activity(auth)
+
+        def extract_by(description):
+            if " by " in description:
+                return description.split(" by ")[1]
+            return None
+
+        if "data" in _all:
+            event = sorted(_all["data"], key=lambda x: x["creationDate"], reverse=True)
+            if len(event):
+                return Event(
+                    ts=datetime.fromtimestamp(event[0]["creationDate"] / 1000),
+                    id=event[0]["id"],
+                    operation=Status.from_str(event[0]["operation"]),
+                    by=extract_by(event[0]["description"]),
+                )
+
+        return None
