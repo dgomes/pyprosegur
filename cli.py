@@ -112,12 +112,29 @@ async def last_event(ctx):
 
         pprint.pprint(r)
 
+@click.command()
+@click.pass_context
+@click.argument("image")
+async def get_image(ctx, image):
+    """Get the last event."""
+    username = ctx.obj["username"]
+    password = ctx.obj["password"]
+    country = ctx.obj["country"]
+
+    async with aiohttp.ClientSession() as session:
+        auth = Auth(session, username, password, country)
+
+        installation = await Installation.retrieve(auth)
+
+        r = await installation.get_image(auth, image)
+
 
 prosegur.add_command(installation)
 prosegur.add_command(arm)
 prosegur.add_command(disarm)
 prosegur.add_command(activity)
 prosegur.add_command(last_event)
+prosegur.add_command(get_image)
 
 if __name__ == "__main__":
     prosegur(obj={})

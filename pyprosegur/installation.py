@@ -1,6 +1,7 @@
 """Installation Representation."""
 import enum
 import logging
+import aiofiles
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
@@ -16,12 +17,16 @@ class Status(enum.Enum):
     ARMED = "AT"
     DISARMED = "DA"
     PARTIALLY = "AP"
+    POWER_FAILURE = "FC"
+    POWER_RESTORED = "RFC"
+    IMAGE = "IM"
     ERROR_DISARMED = "EDA"
     ERROR_ARMED_TOTAL = "EAT"
     ERROR_PARTIALLY = "EAP"
     ERROR_ARMED_TOTAL_COMMUNICATIONS = "EAT-COM"
     ERROR_DISARMED_COMMUNICATIONS = "EDA-COM"
     ERROR_PARTIALLY_COMMUNICATIONS = "EAP-COM"
+    
 
     @staticmethod
     def from_str(code):
@@ -47,6 +52,14 @@ class Event:
     by: str
 
 
+@dataclass
+class Camera:
+    """Prosegur camera."""
+
+    id: str
+    description: str
+
+
 class Installation:
     """Alarm Panel Installation."""
 
@@ -55,6 +68,7 @@ class Installation:
         self.number = None
         self.data = None
         self.installationId = None
+        self.cameras = []
 
     @classmethod
     async def retrieve(cls, auth: Auth, number: int = 0):
@@ -72,6 +86,10 @@ class Installation:
         self.data = resp_json["data"][self.number]
 
         self.installationId = self.data["installationId"]
+
+        for camera in self.data["detectors"]:
+            if camera["type"] == "Camera":
+                self.cameras.append(Camera(camera["id"], camera["description"]))
 
         return self
 
@@ -161,3 +179,11 @@ class Installation:
                 )
 
         return None
+
+    async def get_image(self, auth: Auth, camera: str):
+        
+        resp = await auth.request("GET", f"/image/device/{camera}/last")
+        f = await aiofiles.open(f'{camera}.jpg', mode='wb')
+        await f.write(await resp.read())
+        await f.close()
+        
