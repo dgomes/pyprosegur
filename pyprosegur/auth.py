@@ -9,6 +9,11 @@ LOGGER = logging.getLogger(__name__)
 SMART_SERVER_WS = "https://smart.prosegur.com/smart-server/ws"
 
 COUNTRY = {
+    "AR": {
+        "Origin": "https://smart.prosegur.com/smart-individuo",
+        "Referer": "https://smart.prosegur.com/smart-individuo/login.html",
+        "origin": "Web",
+    },
     "PT": {
         "Origin": "https://smart.prosegur.com/smart-individuo",
         "Referer": "https://smart.prosegur.com/smart-individuo/login.html",
