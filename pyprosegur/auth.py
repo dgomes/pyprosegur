@@ -19,6 +19,11 @@ COUNTRY = {
         "Referer": "https://alarmas.movistarproseguralarmas.es/smart-mv/login.html",
         "origin": "WebM",
     },
+    "CO": {
+        "Origin": "https://smart.prosegur.com/smart-individuo",
+        "Referer": "https://smart.prosegur.com/smart-individuo/login.html",
+        "origin": "Web",
+    },
 }
 
 
