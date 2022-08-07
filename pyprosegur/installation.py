@@ -180,10 +180,29 @@ class Installation:
 
         return None
 
-    async def get_image(self, auth: Auth, camera: str):
+    async def get_image(self, auth: Auth, camera: str, save_to_disk=False):
+        try:
+            resp = await auth.request("GET", f"/image/device/{camera}/last")
+            if save_to_disk:
+                f = await aiofiles.open(f'{camera}.jpg', mode='wb')
+                await f.write(await resp.read())
+                await f.close()
+            else:
+                return await resp.read()
+        except FileNotFoundError as err:
+            LOGGER.error("Could not get image for %s - Not Found. Available cameras: %s", camera, self.cameras)
         
-        resp = await auth.request("GET", f"/image/device/{camera}/last")
-        f = await aiofiles.open(f'{camera}.jpg', mode='wb')
-        await f.write(await resp.read())
-        await f.close()
-        
+
+    async def request_image(self, auth: Auth, camera: str):
+        """Request image update."""
+
+        data = [camera]
+
+        resp = await auth.request(
+            "POST", f"/installation/{self.installationId}/images", json=data
+        )
+
+        json = await resp.json()
+        LOGGER.debug("Request Image %s: %s", camera, json)
+
+        return json

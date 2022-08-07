@@ -6,6 +6,7 @@ Python library to retrieve information from [Prosegur Residential Alarms](http:/
 ## Requirements
 - backoff
 - aiohttp
+- aiofile
 - Click 
 
 ## Changelog

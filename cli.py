@@ -114,9 +114,12 @@ async def last_event(ctx):
 
 @click.command()
 @click.pass_context
-@click.argument("image")
-async def get_image(ctx, image):
-    """Get the last event."""
+@click.argument("camera")
+async def get_image(ctx, camera):
+    """Get CAMERA image.
+
+    CAMERA is the Camera ID to get the image from.
+    """
     username = ctx.obj["username"]
     password = ctx.obj["password"]
     country = ctx.obj["country"]
@@ -126,7 +129,29 @@ async def get_image(ctx, image):
 
         installation = await Installation.retrieve(auth)
 
-        r = await installation.get_image(auth, image)
+        r = await installation.get_image(auth, camera, save_to_disk=True)
+
+
+@click.command()
+@click.pass_context
+@click.argument("camera")
+async def request_image(ctx, camera):
+    """Request new CAMERA image.
+
+    CAMERA is the Camera ID to request a new image from.
+    """
+    username = ctx.obj["username"]
+    password = ctx.obj["password"]
+    country = ctx.obj["country"]
+
+    async with aiohttp.ClientSession() as session:
+        auth = Auth(session, username, password, country)
+
+        installation = await Installation.retrieve(auth)
+
+        r = await installation.request_image(auth, camera)
+
+        pprint.pprint(r)
 
 
 prosegur.add_command(installation)
@@ -135,6 +160,7 @@ prosegur.add_command(disarm)
 prosegur.add_command(activity)
 prosegur.add_command(last_event)
 prosegur.add_command(get_image)
+prosegur.add_command(request_image)
 
 if __name__ == "__main__":
     prosegur(obj={})

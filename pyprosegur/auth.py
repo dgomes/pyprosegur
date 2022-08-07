@@ -111,6 +111,9 @@ class Auth:
             LOGGER.warning(resp.text)
             raise ConnectionError(f"Prosegur backend is unresponsive")
 
+        if 404 == resp.status:
+            raise FileNotFoundError()
+
         if 400 <= resp.status < 500:
             del self.headers["X-Smart-Token"]
             raise ConnectionRefusedError()
