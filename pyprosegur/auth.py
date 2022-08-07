@@ -4,6 +4,8 @@ import logging
 import backoff
 from aiohttp import ClientSession, ClientResponse
 
+from pyprosegur.exceptions import BackendError, NotFound
+
 LOGGER = logging.getLogger(__name__)
 
 SMART_SERVER_WS = "https://smart.prosegur.com/smart-server/ws"
@@ -109,10 +111,10 @@ class Auth:
 
         if 500 <= resp.status <= 600:
             LOGGER.warning(resp.text)
-            raise ConnectionError(f"Prosegur backend is unresponsive")
+            raise BackendError(f"Prosegur backend is unresponsive")
 
         if 404 == resp.status:
-            raise FileNotFoundError()
+            raise NotFound()
 
         if 400 <= resp.status < 500:
             del self.headers["X-Smart-Token"]

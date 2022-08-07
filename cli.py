@@ -125,12 +125,15 @@ async def get_image(ctx, camera):
     country = ctx.obj["country"]
 
     async with aiohttp.ClientSession() as session:
-        auth = Auth(session, username, password, country)
+        try:
+            auth = Auth(session, username, password, country)
 
-        installation = await Installation.retrieve(auth)
+            installation = await Installation.retrieve(auth)
 
-        r = await installation.get_image(auth, camera, save_to_disk=True)
+            r = await installation.get_image(auth, camera, save_to_disk=True)
 
+        except ProsegurException as err:
+            _LOGGER.error("Image %s doesn't exist: %s", self.camera.description, err)
 
 @click.command()
 @click.pass_context

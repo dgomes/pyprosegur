@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 from pyprosegur.auth import Auth
+from pyprosegur.exceptions import BackendError
 
 LOGGER = logging.getLogger(__name__)
 
@@ -26,6 +27,7 @@ class Status(enum.Enum):
     ERROR_ARMED_TOTAL_COMMUNICATIONS = "EAT-COM"
     ERROR_DISARMED_COMMUNICATIONS = "EDA-COM"
     ERROR_PARTIALLY_COMMUNICATIONS = "EAP-COM"
+    ERROR_IMAGE_COMMUNCATIONS = "EIM-COM"
     
 
     @staticmethod
@@ -36,10 +38,6 @@ class Status(enum.Enum):
                 return status
 
         raise NotImplementedError(f"'{code}' not an implemented Installation.Status")
-
-
-class BackendError(Exception):
-    """Error to indicate backend did not return something usefull."""
 
 
 @dataclass
@@ -181,16 +179,13 @@ class Installation:
         return None
 
     async def get_image(self, auth: Auth, camera: str, save_to_disk=False):
-        try:
-            resp = await auth.request("GET", f"/image/device/{camera}/last")
-            if save_to_disk:
-                f = await aiofiles.open(f'{camera}.jpg', mode='wb')
-                await f.write(await resp.read())
-                await f.close()
-            else:
-                return await resp.read()
-        except FileNotFoundError as err:
-            LOGGER.error("Could not get image for %s - Not Found. Available cameras: %s", camera, self.cameras)
+        resp = await auth.request("GET", f"/image/device/{camera}/last")
+        if save_to_disk:
+            f = await aiofiles.open(f'{camera}.jpg', mode='wb')
+            await f.write(await resp.read())
+            await f.close()
+        else:
+            return await resp.read()
         
 
     async def request_image(self, auth: Auth, camera: str):
