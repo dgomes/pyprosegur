@@ -5,5 +5,16 @@
 0.0.7
 - Support for CO clients
 
+0.0.6 (unreleased)
+- Add last-event object, add support for Argentina
+
+0.0.5 
+- Add exponential backoff retries
+
 0.0.4
 - Support ES clients
+- Support for MovistarProsegurAlarms
+
+0.0.1
+- Initial Release
+
