@@ -16,6 +16,7 @@ Python library to retrieve information from [Prosegur Residential Alarms](http:/
 * 0.0.5 - Add exponential backoff retries
 * 0.0.6 (unreleased) - Add last-event object, add support for Argentina
 * 0.0.7 - Support for Colombia
+* 0.0.8 - Supports Cameras (get and request images)
 
 ## NOTES:
 
