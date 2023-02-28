@@ -2,11 +2,12 @@
 import enum
 import logging
 import aiofiles
+from aiohttp import ClientConnectionError
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 from pyprosegur.auth import Auth
-from pyprosegur.exceptions import BackendError
+from pyprosegur.exceptions import BackendError, NotFound
 
 LOGGER = logging.getLogger(__name__)
 
@@ -17,6 +18,7 @@ class Status(enum.Enum):
     ALARM = "LE"
     ARMED = "AT"
     DISARMED = "DA"
+    ERROR = "error"
     PARTIALLY = "AP"
     POWER_FAILURE = "FC"
     POWER_RESTORED = "RFC"
@@ -28,7 +30,6 @@ class Status(enum.Enum):
     ERROR_DISARMED_COMMUNICATIONS = "EDA-COM"
     ERROR_PARTIALLY_COMMUNICATIONS = "EAP-COM"
     ERROR_IMAGE_COMMUNCATIONS = "EIM-COM"
-    
 
     @staticmethod
     def from_str(code):
@@ -61,27 +62,51 @@ class Camera:
 class Installation:
     """Alarm Panel Installation."""
 
-    def __init__(self):
+    def __init__(self, contractId):
         """Installation properties."""
-        self.number = None
         self.data = None
+        self.contractId = contractId
         self.installationId = None
         self.cameras = []
 
     @classmethod
-    async def retrieve(cls, auth: Auth, number: int = 0):
-        """Retrieve an installation object."""
-        self = Installation()
-        self.number = number
-
-        resp = await auth.request("GET", "/installation")
+    async def list(cls, auth: Auth):
+        """Retrieve list of constract associated with user."""
+        try:
+            resp = await auth.request("GET", "/installation")
+        except ClientConnectionError as err:
+            raise BackendError from err
 
         resp_json = await resp.json()
         if resp_json["result"]["code"] != 200:
             LOGGER.error(resp_json["result"])
             raise BackendError(resp_json["result"])
 
-        self.data = resp_json["data"][self.number]
+        return [
+            {"contractId": install["contractId"], "description": install["description"]}
+            for install in resp_json["data"]
+        ]
+
+    @classmethod
+    async def retrieve(cls, auth: Auth, contractId):
+        """Retrieve an installation object."""
+        self = Installation(contractId)
+
+        try:
+            resp = await auth.request("GET", "/installation")
+        except ClientConnectionError as err:
+            raise BackendError from err
+
+        resp_json = await resp.json()
+        if resp_json["result"]["code"] != 200:
+            LOGGER.error(resp_json["result"])
+            raise BackendError(resp_json["result"])
+
+        for install in resp_json["data"]:
+            if install["contractId"] == contractId:
+                self.data = install
+        if not self.data:
+            raise NotFound(f"Contract {contractId} not found")
 
         self.installationId = self.data["installationId"]
 
@@ -94,7 +119,7 @@ class Installation:
     @property
     def contract(self):
         """Contract Identifier."""
-        return self.data["contractId"]
+        return self.contractId
 
     @property
     def status(self):
@@ -145,7 +170,6 @@ class Installation:
 
     async def activity(self, auth: Auth, delta=timedelta(hours=24)):
         """Retrieve activity events."""
-
         date = datetime.now() - delta
         ts = int(date.timestamp()) * 1000
         resp = await auth.request(
@@ -179,18 +203,17 @@ class Installation:
         return None
 
     async def get_image(self, auth: Auth, camera: str, save_to_disk=False):
+        """Retrieve image stored in prosegur backend."""
         resp = await auth.request("GET", f"/image/device/{camera}/last")
         if save_to_disk:
-            f = await aiofiles.open(f'{camera}.jpg', mode='wb')
+            f = await aiofiles.open(f"{camera}.jpg", mode="wb")
             await f.write(await resp.read())
             await f.close()
         else:
             return await resp.read()
-        
 
     async def request_image(self, auth: Auth, camera: str):
         """Request image update."""
-
         data = [camera]
 
         resp = await auth.request(

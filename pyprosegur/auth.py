@@ -111,7 +111,7 @@ class Auth:
 
         if 500 <= resp.status <= 600:
             LOGGER.warning(resp.text)
-            raise BackendError(f"Prosegur backend is unresponsive")
+            raise BackendError("Prosegur backend is unresponsive")
 
         if 404 == resp.status:
             raise NotFound()

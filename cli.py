@@ -6,6 +6,7 @@ import asyncclick as click
 
 from pyprosegur.auth import Auth, COUNTRY
 from pyprosegur.installation import Installation
+from pyprosegur.exceptions import ProsegurException
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -26,7 +27,24 @@ async def prosegur(ctx, username, password, country):
 
 @click.command()
 @click.pass_context
-async def installation(ctx):
+async def list_install(ctx):
+    """Get List of installations."""
+    username = ctx.obj["username"]
+    password = ctx.obj["password"]
+    country = ctx.obj["country"]
+
+    async with aiohttp.ClientSession() as session:
+        auth = Auth(session, username, password, country)
+
+        installations = await Installation.list(auth)
+
+        pprint.pprint(installations)
+
+
+@click.command()
+@click.argument("contract")
+@click.pass_context
+async def installation(ctx, contract):
     """Get installation status."""
     username = ctx.obj["username"]
     password = ctx.obj["password"]
@@ -35,15 +53,16 @@ async def installation(ctx):
     async with aiohttp.ClientSession() as session:
         auth = Auth(session, username, password, country)
 
-        installation = await Installation.retrieve(auth)
+        installation = await Installation.retrieve(auth, contract)
 
         pprint.pprint(installation.data)
         print(installation.status)
 
 
 @click.command()
+@click.argument("contract")
 @click.pass_context
-async def arm(ctx):
+async def arm(ctx, contract):
     """Arm the Alarm Panel."""
     username = ctx.obj["username"]
     password = ctx.obj["password"]
@@ -52,7 +71,7 @@ async def arm(ctx):
     async with aiohttp.ClientSession() as session:
         auth = Auth(session, username, password, country)
 
-        installation = await Installation.retrieve(auth)
+        installation = await Installation.retrieve(auth, contract)
 
         r = await installation.arm(auth)
 
@@ -60,8 +79,9 @@ async def arm(ctx):
 
 
 @click.command()
+@click.argument("contract")
 @click.pass_context
-async def disarm(ctx):
+async def disarm(ctx, contract):
     """Disarm the Alarm Panel."""
     username = ctx.obj["username"]
     password = ctx.obj["password"]
@@ -70,7 +90,7 @@ async def disarm(ctx):
     async with aiohttp.ClientSession() as session:
         auth = Auth(session, username, password, country)
 
-        installation = await Installation.retrieve(auth)
+        installation = await Installation.retrieve(auth, contract)
 
         r = await installation.disarm(auth)
 
@@ -78,8 +98,9 @@ async def disarm(ctx):
 
 
 @click.command()
+@click.argument("contract")
 @click.pass_context
-async def activity(ctx):
+async def activity(ctx, contract):
     """Get Alarm Panel Activity."""
     username = ctx.obj["username"]
     password = ctx.obj["password"]
@@ -88,7 +109,7 @@ async def activity(ctx):
     async with aiohttp.ClientSession() as session:
         auth = Auth(session, username, password, country)
 
-        installation = await Installation.retrieve(auth)
+        installation = await Installation.retrieve(auth, contract)
 
         r = await installation.activity(auth)
 
@@ -96,8 +117,9 @@ async def activity(ctx):
 
 
 @click.command()
+@click.argument("contract")
 @click.pass_context
-async def last_event(ctx):
+async def last_event(ctx, contract):
     """Get the last event."""
     username = ctx.obj["username"]
     password = ctx.obj["password"]
@@ -106,16 +128,18 @@ async def last_event(ctx):
     async with aiohttp.ClientSession() as session:
         auth = Auth(session, username, password, country)
 
-        installation = await Installation.retrieve(auth)
+        installation = await Installation.retrieve(auth, contract)
 
         r = await installation.last_event(auth)
 
         pprint.pprint(r)
 
+
 @click.command()
 @click.pass_context
+@click.argument("contract")
 @click.argument("camera")
-async def get_image(ctx, camera):
+async def get_image(ctx, contract, camera):
     """Get CAMERA image.
 
     CAMERA is the Camera ID to get the image from.
@@ -128,17 +152,19 @@ async def get_image(ctx, camera):
         try:
             auth = Auth(session, username, password, country)
 
-            installation = await Installation.retrieve(auth)
+            installation = await Installation.retrieve(auth, contract)
 
             r = await installation.get_image(auth, camera, save_to_disk=True)
 
         except ProsegurException as err:
-            _LOGGER.error("Image %s doesn't exist: %s", self.camera.description, err)
+            logging.error("Image doesn't exist: %s", err)
+
 
 @click.command()
 @click.pass_context
+@click.argument("contract")
 @click.argument("camera")
-async def request_image(ctx, camera):
+async def request_image(ctx, contract, camera):
     """Request new CAMERA image.
 
     CAMERA is the Camera ID to request a new image from.
@@ -150,13 +176,14 @@ async def request_image(ctx, camera):
     async with aiohttp.ClientSession() as session:
         auth = Auth(session, username, password, country)
 
-        installation = await Installation.retrieve(auth)
+        installation = await Installation.retrieve(auth, contract)
 
         r = await installation.request_image(auth, camera)
 
         pprint.pprint(r)
 
 
+prosegur.add_command(list_install)
 prosegur.add_command(installation)
 prosegur.add_command(arm)
 prosegur.add_command(disarm)
