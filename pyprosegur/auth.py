@@ -109,6 +109,8 @@ class Auth:
             headers=headers,
         )
 
+        LOGGER.debug("Requesting %s %s %s", f"{SMART_SERVER_WS}{path}", kwargs, headers)
+
         if 500 <= resp.status <= 600:
             LOGGER.warning(resp.text)
             raise BackendError("Prosegur backend is unresponsive")
