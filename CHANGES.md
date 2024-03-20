@@ -1,3 +1,9 @@
+0.0.10
+- Support for PY clients
+
+0.0.9
+- Support for multiple contracts
+
 0.0.8
 - Supports Cameras (get and request images)
 - Changes required by Home Assistant
