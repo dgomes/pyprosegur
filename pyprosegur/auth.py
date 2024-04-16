@@ -80,7 +80,8 @@ class Auth:
         )
 
         if response.status != 200:
-            raise ConnectionRefusedError("Could not login")
+            LOGGER.error("%s LOGIN FAILED: %s", response.status, response.reason)
+            raise ConnectionRefusedError(f"Could not login: {response.status} {response.reason}")
 
         login = await response.json()
         self.headers["X-Smart-Token"] = login["data"]["token"]

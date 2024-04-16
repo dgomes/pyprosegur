@@ -193,4 +193,7 @@ prosegur.add_command(get_image)
 prosegur.add_command(request_image)
 
 if __name__ == "__main__":
-    prosegur(obj={})
+    try:
+        prosegur(obj={})
+    except Exception as err:
+        print(err)
