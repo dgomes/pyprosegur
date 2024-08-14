@@ -56,6 +56,23 @@ async def installation(ctx, contract):
         installation = await Installation.retrieve(auth, contract)
 
         pprint.pprint(installation.data)
+
+
+@click.command()
+@click.argument("contract")
+@click.pass_context
+async def status(ctx, contract):
+    """Get alarm status."""
+    username = ctx.obj["username"]
+    password = ctx.obj["password"]
+    country = ctx.obj["country"]
+
+    async with aiohttp.ClientSession() as session:
+        auth = Auth(session, username, password, country)
+
+        installation = await Installation.retrieve(auth, contract)
+        r = await installation.panel_status(auth)
+
         print(installation.status)
 
 
@@ -211,6 +228,7 @@ prosegur.add_command(last_event)
 prosegur.add_command(get_image)
 prosegur.add_command(request_image)
 prosegur.add_command(panel_status)
+prosegur.add_command(status)
 
 if __name__ == "__main__":
     try:

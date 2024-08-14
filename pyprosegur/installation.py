@@ -68,6 +68,7 @@ class Installation:
         self.contractId = contractId
         self.installationId = None
         self.cameras = []
+        self._status = Status.ERROR
 
     @classmethod
     async def list(cls, auth: Auth):
@@ -124,7 +125,7 @@ class Installation:
     @property
     def status(self):
         """Alarm Panel Status."""
-        return Status.from_str(self.data["status"])
+        return self._status
 
     async def arm(self, auth: Auth):
         """Order Alarm Panel to Arm itself."""
@@ -188,6 +189,12 @@ class Installation:
         )
         json = await resp.json()
         LOGGER.debug("Panel Status: %s", json)
+        if "data" in json and "status" in json["data"]:
+            self._status = Status.from_str(json["data"]["status"])
+        else:
+            self._status = Status.ERROR
+            LOGGER.error("Installation Panel Status could not be updated: %s", json)
+
         return json
 
     async def last_event(self, auth: Auth):
