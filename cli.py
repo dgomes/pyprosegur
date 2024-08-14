@@ -119,6 +119,25 @@ async def activity(ctx, contract):
 @click.command()
 @click.argument("contract")
 @click.pass_context
+async def panel_status(ctx, contract):
+    """Get Alarm Panel Panel Status."""
+    username = ctx.obj["username"]
+    password = ctx.obj["password"]
+    country = ctx.obj["country"]
+
+    async with aiohttp.ClientSession() as session:
+        auth = Auth(session, username, password, country)
+
+        installation = await Installation.retrieve(auth, contract)
+
+        r = await installation.panel_status(auth)
+
+        pprint.pprint(r)
+
+
+@click.command()
+@click.argument("contract")
+@click.pass_context
 async def last_event(ctx, contract):
     """Get the last event."""
     username = ctx.obj["username"]
@@ -191,6 +210,7 @@ prosegur.add_command(activity)
 prosegur.add_command(last_event)
 prosegur.add_command(get_image)
 prosegur.add_command(request_image)
+prosegur.add_command(panel_status)
 
 if __name__ == "__main__":
     try:
