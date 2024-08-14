@@ -1,3 +1,8 @@
+0.0.11
+- Update API url (in accordance with Prosegur App)
+- Add panel-status
+- Change alarm status endpoint from installation to panel-status (in accordance with Prosegur App)
+
 0.0.10
 - Support for PY clients
 
