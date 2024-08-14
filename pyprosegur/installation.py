@@ -181,6 +181,15 @@ class Installation:
 
         return json
 
+    async def panel_status(self, auth: Auth):
+        """Retrieve Panel Status."""
+        resp = await auth.request(
+            "GET", f"/installation/{self.installationId}/panel-status"
+        )
+        json = await resp.json()
+        LOGGER.debug("Panel Status: %s", json)
+        return json
+
     async def last_event(self, auth: Auth):
         """Return Last Event."""
         _all = await self.activity(auth)
