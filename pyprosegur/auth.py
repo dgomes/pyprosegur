@@ -8,7 +8,7 @@ from pyprosegur.exceptions import BackendError, NotFound
 
 LOGGER = logging.getLogger(__name__)
 
-SMART_SERVER_WS = "https://smart.prosegur.com/smart-server/ws"
+SMART_SERVER_WS = "https://api-smart.prosegur.cloud/smart-server/ws"
 
 COUNTRY = {
     "AR": {
@@ -81,7 +81,9 @@ class Auth:
 
         if response.status != 200:
             LOGGER.error("%s LOGIN FAILED: %s", response.status, response.reason)
-            raise ConnectionRefusedError(f"Could not login: {response.status} {response.reason}")
+            raise ConnectionRefusedError(
+                f"Could not login: {response.status} {response.reason}"
+            )
 
         login = await response.json()
         self.headers["X-Smart-Token"] = login["data"]["token"]
