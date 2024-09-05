@@ -36,6 +36,11 @@ COUNTRY = {
         "Referer": "https://smart.prosegur.com/smart-individuo/login.html",
         "origin": "Web",
     },
+    "UY": {
+        "Origin": "https://smart.prosegur.com/smart-individuo",
+        "Referer": "https://smart.prosegur.com/smart-individuo/login.html",
+        "origin": "Web",
+    },
 }
 
 

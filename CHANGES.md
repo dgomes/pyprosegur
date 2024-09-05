@@ -1,3 +1,6 @@
+0.0.12
+- Support for UY clients
+
 0.0.11
 - Update API url (in accordance with Prosegur App)
 - Add panel-status
