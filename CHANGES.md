@@ -1,3 +1,6 @@
+0.0.13
+- Pin User-Agent
+
 0.0.12
 - Support for UY clients
 
