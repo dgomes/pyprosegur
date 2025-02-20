@@ -61,6 +61,7 @@ class Auth:
         self.smart_token = None
 
         self.headers = {
+            "User-Agent": "Smart/1 CFNetwork/3826.400.120 Darwin/24.3.0",   #not proud, as we are starting a cat and mouse game
             "Accept": "application/json, text/plain, */*",
             "Content-Type": "application/json;charset=UTF-8",
             "Origin": COUNTRY[self.country]["Origin"],
