@@ -1,3 +1,6 @@
+0.0.14
+- Restore status information from /installation endpoint
+
 0.0.13
 - Pin User-Agent
 
