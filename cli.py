@@ -56,6 +56,7 @@ async def installation(ctx, contract):
         installation = await Installation.retrieve(auth, contract)
 
         pprint.pprint(installation.data)
+        pprint.pprint(installation.status)
 
 
 @click.command()

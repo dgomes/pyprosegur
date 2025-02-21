@@ -111,6 +111,8 @@ class Installation:
 
         self.installationId = self.data["installationId"]
 
+        self._status = Status.from_str(self.data["status"])
+
         for camera in self.data["detectors"]:
             if camera["type"] == "Camera":
                 self.cameras.append(Camera(camera["id"], camera["description"]))
