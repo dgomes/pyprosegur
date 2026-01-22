@@ -1,0 +1,10 @@
+{
+  "result": { "code": 200, "description": "OK", "message": "Get Panel Status" },
+  "data": {
+    "status": "DA",
+    "partitions": [
+      { "id": 12301818, "key": 1, "name": "House", "status": "DA" },
+      { "id": 12301819, "key": 2, "name": "Apartment ", "status": "DA" }
+    ]
+  }
+}

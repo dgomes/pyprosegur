@@ -1,0 +1,72 @@
+{
+  "result": {
+    "code": 200,
+    "description": "OK",
+    "message": "list of installations"
+  },
+  "data": [
+    {
+      "installationId": "16354",
+      "description": "Street name, 66, City Zip and Country",
+      "image": 3,
+      "installationType": "CLIMAX",
+      "pinControl": true,
+      "status": "DA",
+      "hasDomotic": false,
+      "preboarding": false,
+      "detectors": [
+        {
+          "id": "11814261",
+          "description": "HABITACIÓN",
+          "type": "Camera",
+          "streaming": false
+        },
+        {
+          "id": "11814262",
+          "description": "ENTRADA",
+          "type": "Camera",
+          "streaming": false
+        },
+        {
+          "id": "11814263",
+          "description": "PASILLO",
+          "type": "Camera",
+          "streaming": false
+        }
+      ],
+      "videoDetectors": [],
+      "services": [
+        { "type": "PB", "statusCode": 200 },
+        { "type": "A", "statusCode": 200 },
+        { "type": "V", "statusCode": 200 }
+      ],
+      "partitions": [
+        {
+          "id": 12301818,
+          "installationId": 16354,
+          "key": 1,
+          "name": "House",
+          "status": "DA"
+        },
+        {
+          "id": 12301819,
+          "installationId": 16354,
+          "key": 2,
+          "name": "Apartment ",
+          "status": "DA"
+        }
+      ],
+      "domoticDevices": [],
+      "latitude": "23.475670200",
+      "longitude": "-41.374873300",
+      "contractId": "83645223014YrMAAU",
+      "contractType": "V",
+      "contactId": "0020444000pQqsXAAS",
+      "contractActive": true,
+      "locationPostcode": "35109",
+      "contractStatus": "ACTIVO",
+      "address": "Street name, 66, City Zip and Country",
+      "contractNumber": "384952737"
+    }
+  ]
+}
