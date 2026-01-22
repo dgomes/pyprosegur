@@ -206,7 +206,7 @@ class Installation:
         date = datetime.now() - delta
         ts = int(date.timestamp()) * 1000
         resp = await auth.request(
-            "GET", f"/event/installation/{self.installationId}/less?limitDate?{ts}"
+            "GET", f"/event/installation/{self.installationId}/less?limitDate={ts}"
         )
 
         json = await resp.json()
