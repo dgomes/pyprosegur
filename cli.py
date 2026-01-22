@@ -58,6 +58,21 @@ async def installation(ctx, contract):
         pprint.pprint(installation.data)
         pprint.pprint(installation.status)
 
+@click.command()
+@click.argument("contract")
+@click.pass_context
+async def partitions(ctx, contract):
+    """Get partitions."""
+    username = ctx.obj["username"]
+    password = ctx.obj["password"]
+    country = ctx.obj["country"]
+
+    async with aiohttp.ClientSession() as session:
+        auth = Auth(session, username, password, country)
+
+        installation = await Installation.retrieve(auth, contract)
+
+        pprint.pprint(installation.data.partitions)
 
 @click.command()
 @click.argument("contract")
@@ -222,6 +237,7 @@ async def request_image(ctx, contract, camera):
 
 prosegur.add_command(list_install)
 prosegur.add_command(installation)
+prosegur.add_command(partitions)
 prosegur.add_command(arm)
 prosegur.add_command(disarm)
 prosegur.add_command(activity)

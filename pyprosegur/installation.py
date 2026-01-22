@@ -29,10 +29,10 @@ class Status(enum.Enum):
     ERROR_ARMED_TOTAL_COMMUNICATIONS = "EAT-COM"
     ERROR_DISARMED_COMMUNICATIONS = "EDA-COM"
     ERROR_PARTIALLY_COMMUNICATIONS = "EAP-COM"
-    ERROR_IMAGE_COMMUNCATIONS = "EIM-COM"
+    ERROR_IMAGE_COMMUNICATIONS = "EIM-COM"
 
     @staticmethod
-    def from_str(code):
+    def from_str(code: str) -> "Status":
         """Convert Status Code to Enum."""
         for status in Status:
             if code == str(status.value):
@@ -59,19 +59,30 @@ class Camera:
     description: str
 
 
+@dataclass
+class Partition:
+    """Prosegur partition."""
+
+    id: str
+    key: str
+    name: str
+    status: Status
+
+
 class Installation:
     """Alarm Panel Installation."""
 
-    def __init__(self, contractId):
+    def __init__(self, contractId: str) -> None:
         """Installation properties."""
         self.data = None
         self.contractId = contractId
         self.installationId = None
+        self.partitions = []
         self.cameras = []
         self._status = Status.ERROR
 
     @classmethod
-    async def list(cls, auth: Auth):
+    async def list(cls, auth: Auth) -> list[dict[str, str]]:
         """Retrieve list of constract associated with user."""
         try:
             resp = await auth.request("GET", "/installation")
@@ -89,7 +100,7 @@ class Installation:
         ]
 
     @classmethod
-    async def retrieve(cls, auth: Auth, contractId):
+    async def retrieve(cls, auth: Auth, contractId: str) -> "Installation":
         """Retrieve an installation object."""
         self = Installation(contractId)
 
@@ -111,6 +122,16 @@ class Installation:
 
         self.installationId = self.data["installationId"]
 
+        for partition in self.data["partitions"]:
+            self.partitions.append(
+                Partition(
+                    partition["id"],
+                    partition["key"],
+                    partition["name"],
+                    Status.from_str(partition["status"]),
+                )
+            )
+
         self._status = Status.from_str(self.data["status"])
 
         for camera in self.data["detectors"]:
@@ -120,63 +141,71 @@ class Installation:
         return self
 
     @property
-    def contract(self):
+    def contract(self) -> str:
         """Contract Identifier."""
         return self.contractId
 
     @property
-    def status(self):
+    def status(self) -> Status:
         """Alarm Panel Status."""
         return self._status
 
-    async def arm(self, auth: Auth):
+    async def _set_status(
+        self, auth: Auth, target_status: Status, action_name: str, partition: Partition | None = None
+    ) -> bool:
+        """Set the alarm panel to a specific status.
+
+        Args:
+            auth: Auth instance for making requests
+            target_status: The desired Status to set
+            action_name: Name of the action for logging purposes
+            partition: Optional partition to target
+
+        Returns:
+            bool: True if the status was set successfully or already at target status
+        """
+        if self.status == target_status:
+            return True
+
+        if partition is not None:
+            data = {
+                "statusCode": target_status.value,
+                "partitions": [str(partition.key)],
+            }
+        else:
+            data = {"statusCode": target_status.value}
+
+        resp = await auth.request(
+            "PUT", f"/installation/{self.installationId}/status", json=data
+        )
+
+        LOGGER.debug(
+            "%s HTTP status: %s\t%s", action_name, resp.status, await resp.text()
+        )
+        return resp.status == 200
+
+    async def arm(self, auth: Auth, partition: Partition | None = None) -> bool:
         """Order Alarm Panel to Arm itself."""
-        if self.status == Status.ARMED:
-            return True
+        return await self._set_status(auth, Status.ARMED, "ARM", partition=partition)
 
-        data = {"statusCode": Status.ARMED.value}
-
-        resp = await auth.request(
-            "PUT", f"/installation/{self.installationId}/status", json=data
-        )
-
-        LOGGER.debug("ARM HTTP status: %s\t%s", resp.status, await resp.text())
-        return resp.status == 200
-
-    async def arm_partially(self, auth: Auth):
+    async def arm_partially(self, auth: Auth, partition: Partition | None = None) -> bool:
         """Order Alarm Panel to Arm Partially itself."""
-        if self.status == Status.PARTIALLY:
-            return True
-
-        data = {"statusCode": Status.PARTIALLY.value}
-
-        resp = await auth.request(
-            "PUT", f"/installation/{self.installationId}/status", json=data
+        return await self._set_status(
+            auth, Status.PARTIALLY, "ARM", partition=partition
         )
 
-        LOGGER.debug("ARM HTTP status: %s\t%s", resp.status, await resp.text())
-        return resp.status == 200
-
-    async def disarm(self, auth: Auth):
+    async def disarm(self, auth: Auth, partition: Partition | None = None) -> bool:
         """Order Alarm Panel to Disarm itself."""
-        if self.status == Status.DISARMED:
-            return True
-
-        data = {"statusCode": Status.DISARMED.value}
-
-        resp = await auth.request(
-            "PUT", f"/installation/{self.installationId}/status", json=data
+        return await self._set_status(
+            auth, Status.DISARMED, "DISARM", partition=partition
         )
 
-        LOGGER.debug("DISARM HTTP status: %s\t%s", resp.status, await resp.text())
-        return resp.status == 200
-
-    async def activity(self, auth: Auth, delta=timedelta(hours=24)):
+    async def activity(self, auth: Auth, delta: timedelta = timedelta(hours=24)) -> dict:
         """Retrieve activity events."""
         date = datetime.now() - delta
         ts = int(date.timestamp()) * 1000
         resp = await auth.request(
-            "GET", f"/event/installation/{self.installationId}/less?limitDate?{ts}"
+            "GET", f"/event/installation/{self.installationId}/less?limitDate={ts}"
         )
 
         json = await resp.json()
@@ -184,7 +213,7 @@ class Installation:
 
         return json
 
-    async def panel_status(self, auth: Auth):
+    async def panel_status(self, auth: Auth) -> dict:
         """Retrieve Panel Status."""
         resp = await auth.request(
             "GET", f"/installation/{self.installationId}/panel-status"
@@ -199,7 +228,7 @@ class Installation:
 
         return json
 
-    async def last_event(self, auth: Auth):
+    async def last_event(self, auth: Auth) -> Event | None:
         """Return Last Event."""
         _all = await self.activity(auth)
 
@@ -220,7 +249,7 @@ class Installation:
 
         return None
 
-    async def get_image(self, auth: Auth, camera: str, save_to_disk=False):
+    async def get_image(self, auth: Auth, camera: str, save_to_disk: bool = False) -> bytes | None:
         """Retrieve image stored in prosegur backend."""
         resp = await auth.request("GET", f"/image/device/{camera}/last")
         if save_to_disk:
@@ -230,7 +259,7 @@ class Installation:
         else:
             return await resp.read()
 
-    async def request_image(self, auth: Auth, camera: str):
+    async def request_image(self, auth: Auth, camera: str) -> dict:
         """Request image update."""
         data = [camera]
 

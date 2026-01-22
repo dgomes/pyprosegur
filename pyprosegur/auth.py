@@ -49,7 +49,7 @@ class Auth:
 
     def __init__(
         self, websession: ClientSession, user: str, password: str, country: str
-    ):
+    ) -> None:
         """Initialize the auth."""
         self.websession = websession
         self.user = user
@@ -61,14 +61,14 @@ class Auth:
         self.smart_token = None
 
         self.headers = {
-            "User-Agent": "Smart/1 CFNetwork/3826.400.120 Darwin/24.3.0",   #not proud, as we are starting a cat and mouse game
+            "User-Agent": "Smart/1 CFNetwork/3826.400.120 Darwin/24.3.0",  # not proud, as we are starting a cat and mouse game
             "Accept": "application/json, text/plain, */*",
             "Content-Type": "application/json;charset=UTF-8",
             "Origin": COUNTRY[self.country]["Origin"],
             "Referer": COUNTRY[self.country]["Referer"],
         }
 
-    async def login(self):
+    async def login(self) -> None:
         """Login, retrieving Smart Token used for all requests."""
         data = {
             "user": self.user,
