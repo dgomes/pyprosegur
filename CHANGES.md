@@ -1,3 +1,6 @@
+0.0.15
+- Support CL clients
+
 0.0.14
 - Restore status information from /installation endpoint
 
