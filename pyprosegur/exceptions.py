@@ -6,7 +6,7 @@ class ProsegurException(Exception):
 
 
 class BackendError(ProsegurException):
-    """Error to indicate backend did not return something usefull."""
+    """Error to indicate backend did not return something useful."""
 
 
 class NotFound(ProsegurException):
